@@ -2,14 +2,11 @@
     "$schema": "https://schema.management.azure.com/schemas/2015-01-01/deploymentParameters.json#",
     "contentVersion": "1.0.0.0",
     "parameters": {
-        "vmName": {
-            "value": "ipsec10"
+        "vmList": {
+            "value": "vm1,vm2"
         },
         "domainJoinUserName": {
             "value": "administrator"
-        },
-        "vmIpAddress": {
-            "value": "10.0.16.10"
         }
     }
 }
