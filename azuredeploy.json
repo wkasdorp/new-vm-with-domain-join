@@ -71,7 +71,6 @@
       "type": "string",
       "defaultValue": "2012-R2-Datacenter",
       "allowedValues": [
-        "2012-Datacenter",
         "2012-R2-Datacenter",
         "2016-Datacenter"
       ],
@@ -116,12 +115,19 @@
     "vmDataDiskSize": 10,
     "imagePublisher": "MicrosoftWindowsServer",
     "imageOffer": "WindowsServer",
+    "availabilitySet": "[concat('AvailabilitySet-', uniqueString(resourceGroup().id))]",
 
-    "localAdminName": "adAdministrator",
+    "localAdminName": "LocalAdmin",
     "localAdminPassword": "[concat(uniqueString(resourceGroup().id, 'aasdfveas##1Ax!'), 'kumislk!443')]"
   },
 
   "resources": [
+    {
+      "name": "[variables('availabilitySet')]",
+      "type": "Microsoft.Compute/availabilitySets",
+      "apiVersion": "2016-03-30",
+      "location": "[resourceGroup().location]"
+    },
     {
       "name": "[concat(variables('vmList')[copyIndex()], '-nic')]",
       "type": "Microsoft.Network/networkInterfaces",
@@ -157,11 +163,15 @@
         "count": "[length(variables('vmList'))]"
       },
       "dependsOn": [
-        "[resourceId('Microsoft.Network/networkInterfaces', concat(variables('vmList')[copyIndex()], '-nic'))]"
+        "[resourceId('Microsoft.Network/networkInterfaces', concat(variables('vmList')[copyIndex()], '-nic'))]",
+        "[resourceId('Microsoft.Compute/availabilitySets', variables('availabilitySet'))]"
       ],
       "properties": {
         "hardwareProfile": {
           "vmSize": "[parameters('VMSize')]"
+        },
+        "availabilitySet": {
+          "id": "[resourceId('Microsoft.Compute/availabilitySets', variables('availabilitySet'))]"
         },
         "osProfile": {
           "computerName": "[variables('vmList')[copyIndex()]]",
@@ -226,7 +236,7 @@
               "Options": "[variables('domainJoinOptions')]",
               "OUPath": "[parameters('ouDN')]"
             },
-            "protectedsettings": {
+            "protectedSettings": {
               "Password": "[parameters('domainJoinUserPassword')]"
             }
           }

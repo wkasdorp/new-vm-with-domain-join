@@ -25,6 +25,10 @@ The VMs are deliberately created without public NICs. They already
 have internal connectivity, so use that to open RDP connections etc.
 Your VNET must allow internet access for the VMs. 
 
+All VMs are configured in an automatically named Availability Set. 
+Although this is not always needed, it is required for certain cases such
+as placing VMs in a load balancer. 
+
 The template, unusually, does not ask for the administrator name 
 and password for the new VMs. This is because the VMs will 
 be joined to a domain and the local Admin account is not needed.
