@@ -115,7 +115,7 @@
     "vmDataDiskSize": 10,
     "imagePublisher": "MicrosoftWindowsServer",
     "imageOffer": "WindowsServer",
-    "availabilitySet": "[concat('AvailabilitySet-', uniqueString(resourceGroup().id))]",
+    "availabilitySet": "[concat('AvailabilitySet-', uniqueString(resourceGroup().id, parameters('vmList')))]",
 
     "localAdminName": "LocalAdmin",
     "localAdminPassword": "[concat(uniqueString(resourceGroup().id, 'aasdfveas##1Ax!'), 'kumislk!443')]"
