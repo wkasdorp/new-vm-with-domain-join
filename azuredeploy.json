@@ -111,11 +111,12 @@
     "backslash": "\\",
     "domainJoinAccount": "[concat(parameters('domainNameFQDN'), variables('backslash'), parameters('domainJoinUserName'))]",
     "domainJoinOptions": 3,
-    "vmList" : "[split(parameters('vmList'),',')]",
+    "vmList": "[split(parameters('vmList'),',')]",
     "vmDataDiskSize": 10,
     "imagePublisher": "MicrosoftWindowsServer",
     "imageOffer": "WindowsServer",
-    "availabilitySet": "[concat('AvailabilitySet-', uniqueString(resourceGroup().id, parameters('vmList')))]",
+    "availSetUniqueName": "[take(replace(concat(parameters('vmList')), ',', '-'), 16)]",
+    "availabilitySet": "[concat('AvailSet-', variables('availSetUniqueName'), '-', uniqueString(resourceGroup().id))]",
 
     "localAdminName": "LocalAdmin",
     "localAdminPassword": "[concat(uniqueString(resourceGroup().id, 'aasdfveas##1Ax!'), 'kumislk!443')]"

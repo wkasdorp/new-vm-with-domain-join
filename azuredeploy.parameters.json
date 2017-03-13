@@ -3,7 +3,7 @@
     "contentVersion": "1.0.0.0",
     "parameters": {
         "vmList": {
-            "value": "vm1,vm2"
+            "value": "wk1,wk2"
         },
         "domainJoinUserName": {
             "value": "administrator"
