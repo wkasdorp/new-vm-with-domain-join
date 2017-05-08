@@ -119,8 +119,8 @@
     "availabilitySet": "[concat('AvailSet-', variables('availSetUniqueName'), '-', uniqueString(resourceGroup().id))]",
 
     "localAdminName": "LocalAdmin",
-    "localAdminPassword1": "[concat(uniqueString(resourceGroup().id, 'aasdfveas##1Ax!'), 'kumislk!443')]",
-    "localAdminPassword":  "[parameters('domainJoinUserPassword')]"
+    "localAdminPassword": "[concat(uniqueString(resourceGroup().id, 'aasdfveas##1Ax!'), 'kumislk!443')]",
+    "localAdminPassword-Unused":  "[parameters('domainJoinUserPassword')]"
   },
 
   "resources": [

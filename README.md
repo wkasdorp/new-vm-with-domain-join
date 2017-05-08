@@ -1,11 +1,14 @@
 # Create new VMs and join them to an existing AD domain
 
 This template creates one or more new VMs and joins them to an 
-existing AD domain, using an existing VNET and existing storage account. 
-The AD domain must have connectivity to the VNET. 
-The DNS definitions on the VNET will inherit to the VMs and _must_ enable
-the new VMs to resolve the AD domain. Also, your AD DNS must be able to 
-resolve the public internet. 
+existing AD domain. Prerequisites:
+* The target OU must exist.
+* The VNET and subnet must exist, but may be in another Resource Group.
+* The AD domain must have connectivity to the VNET. It could be in the same VNET or remote, that does not matter. 
+* The existing DNS definitions on the VNET will inherit to the VMs and _must_ enable the new VMs to resolve the AD domain. 
+* The AD DNS must be able to resolve the public internet. 
+
+* The storage account must exist. 
 
 One-click deployment to Azure:
 
@@ -36,3 +39,5 @@ and password for the new VMs. This is because the VMs will
 be joined to a domain and the local Admin account is not needed.
 The password is obfuscated but not random. For increased security
 you need to set it yourself. 
+
+Final note: do not deploy to the container CN=Computers,<DN-Domain>. I found experimentally that this always fails. You must use an existing OU. 
