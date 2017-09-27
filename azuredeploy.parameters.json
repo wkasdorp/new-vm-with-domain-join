@@ -3,10 +3,19 @@
     "contentVersion": "1.0.0.0",
     "parameters": {
         "vmList": {
-            "value": "wk1,wk2"
+            "value": "wk16,wk17"
         },
         "domainJoinUserName": {
             "value": "administrator"
-        }
+        },
+      "vmSize": {
+        "value": "Standard_A2_v2"
+      },
+      "autoShutdownVMs": {
+        "value": false
+      },
+      "imageSKU": {
+        "value": "2016-Datacenter"
+      }
     }
 }
