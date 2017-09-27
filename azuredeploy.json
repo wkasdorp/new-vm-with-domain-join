@@ -24,13 +24,6 @@
       },
       "defaultValue": "VMs"
     },
-    "storageAccountName": {
-      "type": "string",
-      "metadata": {
-        "description": "The name of _existing_ storage account created to store the VMs disks"
-      },
-      "defaultValue": "rgadfs5826"
-    },
 
     "vmList": {
       "type": "string",
@@ -41,28 +34,20 @@
     "vmSize": {
       "type": "string",
       "metadata": {
-        "description": "The size of the VM."
+        "description": "The size of the VM. If you choose a 'DS' type, a Premium managed disk will be created."
       },
       "allowedValues": [
         "Basic_A1",
         "Basic_A2",
         "Basic_A3",
-        "Standard_A1",
         "Standard_A1_v2",
-        "Standard_A2",
         "Standard_A2_v2",
         "Standard_A3",
-        "Standard_D1",
         "Standard_D1_v2",
-        "Standard_D2",
         "Standard_D2_v2",
-        "Standard_D3",
         "Standard_D3_v2",
-        "Standard_DS1",
         "Standard_DS1_v2",
-        "Standard_DS2",
         "Standard_DS2_v2",
-        "Standard_DS3",
         "Standard_DS3_v2"
       ],
       "defaultValue": "Standard_DS1_v2"
@@ -76,6 +61,13 @@
       ],
       "metadata": {
         "description": "Windows Server Version."
+      }
+    },
+    "autoShutdownVMs": {
+      "type": "bool",
+      "defaultValue": false,
+      "metadata": {
+        "description": "If enabled, generate a shutdown/deallocate schedule for 23:00 UTC"
       }
     },
     "domainNameFQDN": {
@@ -95,7 +87,7 @@
     "domainJoinUserName": {
       "type": "string",
       "metadata": {
-        "description": "User account that can join the VM to the domain. Do not specify the domain."
+        "description": "User account that can join the VM to the domain. DO NOT specify the domain."
       }
     },
     "domainJoinUserPassword": {
@@ -117,18 +109,27 @@
     "imageOffer": "WindowsServer",
     "availSetUniqueName": "[take(replace(concat(parameters('vmList')), ',', '-'), 16)]",
     "availabilitySet": "[concat('AvailSet-', variables('availSetUniqueName'), '-', uniqueString(resourceGroup().id))]",
+    "vmShutDownTime": "2300",
+    "vmShutDownTimeZone": "UTC",
 
     "localAdminName": "LocalAdmin",
     "localAdminPassword": "[concat(uniqueString(resourceGroup().id, 'aasdfveas##1Ax!'), 'kumislk!443')]",
-    "localAdminPassword-Unused":  "[parameters('domainJoinUserPassword')]"
+    "localAdminPassword-Unused": "[parameters('domainJoinUserPassword')]"
   },
 
   "resources": [
     {
       "name": "[variables('availabilitySet')]",
       "type": "Microsoft.Compute/availabilitySets",
-      "apiVersion": "2016-03-30",
-      "location": "[resourceGroup().location]"
+      "apiVersion": "2017-03-30",
+      "location": "[resourceGroup().location]",
+      "sku": {
+        "name": "Aligned"
+      },
+      "properties": {
+        "PlatformUpdateDomainCount": 3,
+        "PlatformFaultDomainCount": 2
+      }
     },
     {
       "name": "[concat(variables('vmList')[copyIndex()], '-nic')]",
@@ -156,9 +157,31 @@
       }
     },
     {
+      "type": "Microsoft.Compute/disks",
+      "name": "[concat(variables('vmList')[copyIndex()],'-managed-datadisk1')]",
+      "apiVersion": "2017-03-30",
+      "location": "[resourceGroup().location]",
+      "dependsOn": [
+        "[variables('availabilitySet')]"
+      ],
+      "copy": {
+        "name": "CreateAllManagedDataDisks",
+        "count": "[length(variables('vmList'))]"
+      },
+      "sku": {
+        "name": "[if(contains(parameters('vmSize'),'DS'),'Premium_LRS','Standard_LRS')]"
+      },
+      "properties": {
+        "creationData": {
+          "createOption": "Empty"
+        },
+        "diskSizeGB": "[variables('vmDataDiskSize')]"
+      }
+    },
+    {
       "name": "[variables('vmList')[copyIndex()]]",
       "type": "Microsoft.Compute/virtualMachines",
-      "apiVersion": "2016-03-30",
+      "apiVersion": "2017-03-30",
       "location": "[resourceGroup().location]",
       "copy": {
         "name": "CreateAllVMs",
@@ -166,6 +189,7 @@
       },
       "dependsOn": [
         "[resourceId('Microsoft.Network/networkInterfaces', concat(variables('vmList')[copyIndex()], '-nic'))]",
+        "[resourceId('Microsoft.Compute/disks/', concat(variables('vmList')[copyIndex()],'-managed-datadisk1'))]",
         "[resourceId('Microsoft.Compute/availabilitySets', variables('availabilitySet'))]"
       ],
       "properties": {
@@ -187,24 +211,21 @@
             "sku": "[parameters('imageSKU')]",
             "version": "latest"
           },
+
           "osDisk": {
-            "name": "[concat(variables('vmList')[copyIndex()],'-osdisk1-', substring(uniqueString(resourceGroup().id), 6))]",
-            "vhd": {
-              "uri": "[concat('http://',parameters('StorageAccountName'),'.blob.core.windows.net/vhds0/', concat(variables('vmList')[copyIndex()],'-osdisk1-', substring(uniqueString(resourceGroup().id), 6)), '.vhd')]"
-            },
-            "caching": "ReadWrite",
-            "createOption": "FromImage"
+            "name": "[concat(variables('vmList')[copyIndex()],'-managed-osdisk1')]",
+            "createOption": "FromImage",
+            "caching": "ReadWrite"
           },
           "dataDisks": [
             {
-              "name": "[concat(variables('vmList')[copyIndex()],'-datadisk1-', substring(uniqueString(resourceGroup().id), 6))]",
-              "vhd": {
-                "uri": "[concat('http://',parameters('StorageAccountName'),'.blob.core.windows.net/vhds0/', concat(variables('vmList')[copyIndex()],'-datadisk1-', substring(uniqueString(resourceGroup().id), 6)), '.vhd')]"
-              },
-              "caching": "None",
-              "diskSizeGB": "[variables('vmDataDiskSize')]",
               "lun": 0,
-              "createOption": "Empty"
+              "name": "[concat(variables('vmList')[copyIndex()],'-managed-datadisk1')]",
+              "createOption": "Attach",
+              "managedDisk": {
+                "id": "[resourceId('Microsoft.Compute/disks/', concat(variables('vmList')[copyIndex()],'-managed-datadisk1'))]"
+              },
+              "caching": "None"
             }
           ]
         },
@@ -241,6 +262,29 @@
             "protectedSettings": {
               "Password": "[parameters('domainJoinUserPassword')]"
             }
+          }
+        },
+        {
+          "apiVersion": "2017-04-26-preview",
+          "type": "microsoft.devtestlab/schedules",
+          "condition": "[parameters('autoShutdownVMs')]",
+          "name": "[concat('shutdown-computevm-', variables('vmList')[copyIndex()])]",
+          "location": "[resourceGroup().location]",
+          "dependsOn": [
+            "[resourceId('Microsoft.Compute/virtualMachines',variables('vmList')[copyIndex()])]"
+          ],
+          "properties": {
+            "status": "Enabled",
+            "taskType": "ComputeVmShutdownTask",
+            "dailyRecurrence": {
+              "time": "[variables('vmShutDownTime')]"
+            },
+            "timeZoneId": "[variables('vmShutDownTimeZone')]",
+            "notificationSettings": {
+              "status": "Disabled",
+              "timeInMinutes": 15
+            },
+            "targetResourceId": "[resourceId('Microsoft.Compute/virtualMachines',variables('vmList')[copyIndex()])]"
           }
         }
       ]
