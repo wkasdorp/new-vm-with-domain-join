@@ -4,6 +4,7 @@
 * Added support for managed disks.
 * Automatically use correct disk SKU (Standard or Premium) depending on VM Size.
 * Optional autoshutdown schedule for each VM, set for 11:00 PM, UTC.
+* Breaking change: no parameter for a storage account.
 
 ### Features
 
@@ -21,14 +22,6 @@ One-click deployment to Azure:
 <a href="https://portal.azure.com/#create/Microsoft.Template/uri/https%3A%2F%2Fraw.githubusercontent.com%2Fwkasdorp%2Fnew-vm-with-domain-join%2Fmaster%2Fazuredeploy.json" target="_blank">
     <img src="http://azuredeploy.net/deploybutton.png"/>
 </a>
-
-
-**DEV ONLY, links to 2.0-dev**:
-
-<a href="https://portal.azure.com/#create/Microsoft.Template/uri/https%3A%2F%2Fraw.githubusercontent.com%2Fwkasdorp%2Fnew-vm-with-domain-join%2F2.0-dev%2Fazuredeploy.json" target="_blank">
-    <img src="http://azuredeploy.net/deploybutton.png"/>
-</a>
-
 
 Warning: this template **creates one or more running VMs**. 
 Make sure to deallocate them when you are done to avoid incurring costs. 
