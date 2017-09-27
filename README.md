@@ -22,6 +22,14 @@ One-click deployment to Azure:
     <img src="http://azuredeploy.net/deploybutton.png"/>
 </a>
 
+
+**DEV ONLY, links to 2.0-dev**:
+
+<a href="https://portal.azure.com/#create/Microsoft.Template/uri/https%3A%2F%2Fraw.githubusercontent.com%2Fwkasdorp%2Fnew-vm-with-domain-join%2F2.0-dev%2Fazuredeploy.json" target="_blank">
+    <img src="http://azuredeploy.net/deploybutton.png"/>
+</a>
+
+
 Warning: this template **creates one or more running VMs**. 
 Make sure to deallocate them when you are done to avoid incurring costs. 
 
@@ -51,7 +59,7 @@ be joined to an AD domain, so the local Admin account is not needed.
 The password is obfuscated _but is not random_. For increased security
 you need to set it yourself. 
 
-The lack of a accessible local admin account also means that troubleshooting is 
+The lack of an accessible local admin account also means that troubleshooting is 
 harder when the domain join operation fails.
 That would happen if the OU does not exist, the credentials are incorrect, etc. However,
 I have also seen it fail for no obvious reason on Windows Server 2016. It has 
