@@ -157,28 +157,6 @@
       }
     },
     {
-      "type": "Microsoft.Compute/disks",
-      "name": "[concat(variables('vmList')[copyIndex()],'-managed-datadisk1')]",
-      "apiVersion": "2017-03-30",
-      "location": "[resourceGroup().location]",
-      "dependsOn": [
-        "[variables('availabilitySet')]"
-      ],
-      "copy": {
-        "name": "CreateAllManagedDataDisks",
-        "count": "[length(variables('vmList'))]"
-      },
-      "sku": {
-        "name": "[if(contains(parameters('vmSize'),'DS'),'Premium_LRS','Standard_LRS')]"
-      },
-      "properties": {
-        "creationData": {
-          "createOption": "Empty"
-        },
-        "diskSizeGB": "[variables('vmDataDiskSize')]"
-      }
-    },
-    {
       "name": "[variables('vmList')[copyIndex()]]",
       "type": "Microsoft.Compute/virtualMachines",
       "apiVersion": "2017-03-30",
@@ -189,7 +167,6 @@
       },
       "dependsOn": [
         "[resourceId('Microsoft.Network/networkInterfaces', concat(variables('vmList')[copyIndex()], '-nic'))]",
-        "[resourceId('Microsoft.Compute/disks/', concat(variables('vmList')[copyIndex()],'-managed-datadisk1'))]",
         "[resourceId('Microsoft.Compute/availabilitySets', variables('availabilitySet'))]"
       ],
       "properties": {
@@ -211,7 +188,6 @@
             "sku": "[parameters('imageSKU')]",
             "version": "latest"
           },
-
           "osDisk": {
             "name": "[concat(variables('vmList')[copyIndex()],'-managed-osdisk1')]",
             "createOption": "FromImage",
@@ -219,13 +195,11 @@
           },
           "dataDisks": [
             {
+              "name" : "[concat(variables('vmList')[copyIndex()],'-managed-datadisk1')]", 
+              "caching": "None",
               "lun": 0,
-              "name": "[concat(variables('vmList')[copyIndex()],'-managed-datadisk1')]",
-              "createOption": "Attach",
-              "managedDisk": {
-                "id": "[resourceId('Microsoft.Compute/disks/', concat(variables('vmList')[copyIndex()],'-managed-datadisk1'))]"
-              },
-              "caching": "None"
+              "diskSizeGB": "[variables('vmDataDiskSize')]",
+              "createOption": "Empty"
             }
           ]
         },

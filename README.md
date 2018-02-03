@@ -38,7 +38,9 @@ have internal connectivity, so use that to open RDP connections etc.
 Your VNET must allow internet access for the VMs. 
 
 The VMs use managed disks, which means that they do not depend on
-an existing storage account.
+an existing storage account. Specifically, the template uses
+implicit managed disks where the disks are created as a direct
+resource of the VM.
 
 All VMs are configured in an automatically named Availability Set. 
 Although an Availability Set is not always needed, it is required for certain cases such
