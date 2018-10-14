@@ -15,7 +15,7 @@
       "value": "2016-Datacenter"
     },
     "vmList": {
-      "value": "test1"
+      "value": "test1,test2"
     },
     "domainJoinUserPassword": {
       "reference": {
