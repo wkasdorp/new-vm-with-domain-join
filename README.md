@@ -1,10 +1,16 @@
 # Create new VMs and join them to an existing AD domain
 
+
+
 ### New for V2
 * Added support for managed disks.
 * Automatically use correct disk SKU (Standard or Premium) depending on VM Size.
 * Optional autoshutdown schedule for each VM, set for 11:00 PM, UTC.
 * Breaking change: no parameter for a storage account.
+
+## new for V3
+* added disk type, defaulting to StandardSSD.
+* template cleanup and updates. 
 
 ### Features
 
@@ -28,7 +34,7 @@ Make sure to deallocate them when you are done to avoid incurring costs.
 
 ### Background information
 
-The existing VNET and Storage Groups can be in different Resource Groups. 
+The existing VNET can be in a different Resource Group. 
 This enables a neat trick: after you are done with the VMs you can remove
 the entire Resource Group and its contents in one shot, 
 instead of having to pick the resources from the existing RG one by one. 
