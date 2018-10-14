@@ -28,7 +28,7 @@
     "vmList": {
       "type": "string",
       "metadata": {
-        "description": "One ore more VM names, seperated by comma: vm1,vm2"
+        "description": "One or more VM names, seperated by comma: vm1,vm2"
       }
     },
     "vmSize": {
@@ -43,6 +43,9 @@
         "Standard_A1_v2",
         "Standard_A2_v2",
         "Standard_A3",
+        "Standard_B2s",
+        "Standard_B2ms",
+        "Standard_B4ms",
         "Standard_D1_v2",
         "Standard_D2_v2",
         "Standard_D3_v2",
@@ -54,13 +57,25 @@
     },
     "imageSKU": {
       "type": "string",
-      "defaultValue": "2012-R2-Datacenter",
+      "defaultValue": "2016-Datacenter",
       "allowedValues": [
         "2012-R2-Datacenter",
         "2016-Datacenter"
       ],
       "metadata": {
         "description": "Windows Server Version."
+      }
+    },
+    "diskType": {
+      "type": "string",
+      "defaultValue": "StandardSSD_LRS",
+      "allowedValues": [
+        "StandardSSD_LRS",
+        "Standard_LRS",
+        "Premium_LRS"
+      ],
+      "metadata": {
+        "description": "The Storage type of the data Disks. Use Premium only with *s or *DS* VM types."
       }
     },
     "autoShutdownVMs": {
@@ -73,14 +88,14 @@
     "domainNameFQDN": {
       "type": "string",
       "metadata": {
-        "description": "Fully qualified name of the target domain."
+        "description": "Fully qualified name of the target AD domain."
       },
       "defaultValue": "sol.local"
     },
     "ouDN": {
       "type": "string",
       "metadata": {
-        "description": "Distinguished Name of the OU"
+        "description": "Distinguished Name of the OU (must exist)."
       },
       "defaultValue": "ou=other,ou=member servers,ou=myou,dc=sol,dc=local"
     },
@@ -98,13 +113,12 @@
     }
   },
   "variables": {
-    "vnetID": "[resourceId(parameters('ResourceGroupForVNET'), 'Microsoft.Network/virtualNetworks', parameters('virtualNetworkName'))]",
-    "subnetRef": "[concat(variables('vnetID'),'/subnets/',parameters('SubnetName'))]",
+    "subnetRef": "[resourceId('Microsoft.Network/virtualNetworks/subnets/', parameters('virtualNetworkName'),parameters('SubnetName'))]", 
     "backslash": "\\",
     "domainJoinAccount": "[concat(parameters('domainNameFQDN'), variables('backslash'), parameters('domainJoinUserName'))]",
     "domainJoinOptions": 3,
     "vmList": "[split(parameters('vmList'),',')]",
-    "vmDataDiskSize": 10,
+    "vmDataDiskSize": 20,
     "imagePublisher": "MicrosoftWindowsServer",
     "imageOffer": "WindowsServer",
     "availSetUniqueName": "[take(replace(concat(parameters('vmList')), ',', '-'), 16)]",
@@ -121,7 +135,7 @@
     {
       "name": "[variables('availabilitySet')]",
       "type": "Microsoft.Compute/availabilitySets",
-      "apiVersion": "2017-03-30",
+      "apiVersion": "2018-10-01",
       "location": "[resourceGroup().location]",
       "sku": {
         "name": "Aligned"
@@ -134,7 +148,7 @@
     {
       "name": "[concat(variables('vmList')[copyIndex()], '-nic')]",
       "type": "Microsoft.Network/networkInterfaces",
-      "apiVersion": "2016-10-01",
+      "apiVersion": "2018-08-01",
       "location": "[resourceGroup().location]",
       "copy": {
         "name": "CreateAllNics",
@@ -159,7 +173,7 @@
     {
       "name": "[variables('vmList')[copyIndex()]]",
       "type": "Microsoft.Compute/virtualMachines",
-      "apiVersion": "2017-03-30",
+      "apiVersion": "2018-10-01",
       "location": "[resourceGroup().location]",
       "copy": {
         "name": "CreateAllVMs",
@@ -191,7 +205,10 @@
           "osDisk": {
             "name": "[concat(variables('vmList')[copyIndex()],'-managed-osdisk1')]",
             "createOption": "FromImage",
-            "caching": "ReadWrite"
+            "caching": "ReadWrite",
+            "managedDisk": {
+              "storageAccountType": "[parameters('diskType')]"
+            }
           },
           "dataDisks": [
             {
@@ -199,7 +216,10 @@
               "caching": "None",
               "lun": 0,
               "diskSizeGB": "[variables('vmDataDiskSize')]",
-              "createOption": "Empty"
+              "createOption": "Empty",
+              "managedDisk": {
+                "storageAccountType": "[parameters('diskType')]"
+              }
             }
           ]
         },
@@ -215,7 +235,7 @@
         {
           "name": "[concat(variables('vmList')[copyIndex()],'/joindomain')]",
           "comments": "Join domain - JsonADDomainExtension",
-          "apiVersion": "2015-06-15",
+          "apiVersion": "2018-10-01",
           "type": "Microsoft.Compute/virtualMachines/extensions",
           "location": "[resourceGroup().location]",
           "dependsOn": [
@@ -239,7 +259,7 @@
           }
         },
         {
-          "apiVersion": "2017-04-26-preview",
+          "apiVersion": "2018-10-15-preview",
           "type": "microsoft.devtestlab/schedules",
           "condition": "[parameters('autoShutdownVMs')]",
           "name": "[concat('shutdown-computevm-', variables('vmList')[copyIndex()])]",
