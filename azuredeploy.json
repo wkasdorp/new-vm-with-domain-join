@@ -24,7 +24,6 @@
       },
       "defaultValue": "VMs"
     },
-
     "vmList": {
       "type": "string",
       "metadata": {
@@ -113,7 +112,7 @@
     }
   },
   "variables": {
-    "subnetRef": "[resourceId('Microsoft.Network/virtualNetworks/subnets/', parameters('virtualNetworkName'),parameters('SubnetName'))]", 
+    "subnetRef": "[resourceId(parameters('ResourceGroupForVNET'),'Microsoft.Network/virtualNetworks/subnets/', parameters('virtualNetworkName'),parameters('SubnetName'))]", 
     "backslash": "\\",
     "domainJoinAccount": "[concat(parameters('domainNameFQDN'), variables('backslash'), parameters('domainJoinUserName'))]",
     "domainJoinOptions": 3,
